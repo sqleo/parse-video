@@ -109,7 +109,6 @@
     /* 结果两列网格与图片网格 */
     .results-grid{
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
       grid-gap: 16px;
       margin-top: 16px;
     }
@@ -126,12 +125,15 @@
     }
     .image-grid{
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-gap: 8px;
       margin-top: 8px;
+      width: 100%;
     }
+    .image-item{ min-width: 0; }
     .image-item img{
       width: 100%;
+      height: auto;
       border-radius: 4px;
       display: block;
       margin-bottom: 4px;
@@ -142,7 +144,7 @@
 	<img class="mdui-img-circle mdui-center" style="width: 150px;" src="https://cdn.jsdelivr.net/gh/5ime/img/avatar.jpg"/>
   <h1 class='mdui-text-center'>在线短视频去水印解析</h1>
   <div class="mdui-typo">
-    <p><strong>目前支持: </strong>抖音/皮皮虾/火山/微视/最右/快手/全民小视频/皮皮搞笑/梨视频/西瓜/微博/虎牙/绿洲/好看/逗拍/美拍/新片场/A站/全民K歌/6间房</p>
+    <p><strong>目前支持: </strong>抖音/皮皮虾/火山/微视/最右/快手/全民小视频/皮皮搞笑/梨视频/西瓜/微博/虎牙/绿洲/好看/逗拍/美拍/新片场/A站/全民K歌/6间房/B站</p>
     <p>
         <strong>温馨提示: </strong><br/>
         1. 粘贴视频地址时<u>无需删除文案</u><small> 但如果视频链接正确但解析失败请删掉文案后重试</small><br/>
@@ -239,19 +241,25 @@ function  setValue(){
         cardHtml += '<div class="mdui-card result-card">';
         cardHtml += '<h4>' + (jsonObj.data.title || '') + '</h4>';
 
-        if (jsonObj.data.cover_url) {
+        // 优先展示视频；无视频再展示封面
+        if (jsonObj.data.video_url) {
+            cardHtml += '<video class="thumb" controls playsinline preload="metadata">';
+            cardHtml += '<source src="' + jsonObj.data.video_url + '" type="video/mp4">';
+            cardHtml += '您的浏览器不支持视频播放';
+            cardHtml += '</video>';
+        } else if (jsonObj.data.cover_url) {
             cardHtml += '<img class="thumb" src="' + jsonObj.data.cover_url + '"/>';
         }
 
         cardHtml += '<div class="mdui-typo">';
-        if (jsonObj.data.cover_url) {
-            cardHtml += '<a class="mdui-btn mdui-btn-raised" href="/download?url='+encodeURIComponent(jsonObj.data.cover_url)+'" target="_blank" rel="noopener" style="text-transform: none;">下载封面</a>';
-        }
         if (jsonObj.data.video_url) {
             cardHtml += '<a class="mdui-btn mdui-btn-raised" href="/download?url='+encodeURIComponent(jsonObj.data.video_url)+'" target="_blank" rel="noopener" style="text-transform: none;">下载视频</a>';
         }
         if (jsonObj.data.music_url) {
             cardHtml += '<a class="mdui-btn mdui-btn-raised" href="/download?url='+encodeURIComponent(jsonObj.data.music_url)+'" target="_blank" rel="noopener" style="text-transform: none;">下载音频</a>';
+        }
+        if (jsonObj.data.cover_url) {
+            cardHtml += '<a class="mdui-btn mdui-btn-raised" href="/download?url='+encodeURIComponent(jsonObj.data.cover_url)+'" target="_blank" rel="noopener" style="text-transform: none;">下载封面</a>';
         }
         cardHtml += '</div>';
 
