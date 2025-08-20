@@ -6,8 +6,47 @@
 <meta name="renderer" content="webkit"/>
 <meta name="force-rendering" content="webkit"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-<title>视频解析</title>
+<title>{{if .title}}{{.title}}{{else}}视频解析 - 短视频去水印在线工具{{end}}</title>
 <link rel="icon" type="image/png" href="favicon.png">
+
+<!-- SEO 基础 -->
+<meta name="description" content="{{with .description}}{{.}}{{else}}在线短视频去水印解析，支持抖音、快手、微博等平台，一键解析视频、封面、音频与图集。{{end}}"/>
+<meta name="keywords" content="{{with .keywords}}{{.}}{{else}}视频解析,去水印,抖音解析,快手解析,短视频下载{{end}}"/>
+<meta name="robots" content="index,follow,max-image-preview:large"/>
+<link rel="canonical" href="{{if .canonical}}{{.canonical}}{{else}}/{{end}}"/>
+<link rel="alternate" hreflang="zh-CN" href="{{if .canonical}}{{.canonical}}{{else}}/{{end}}"/>
+
+<!-- Open Graph -->
+<meta property="og:type" content="website"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:site_name" content="{{with .site_name}}{{.}}{{else}}视频解析{{end}}"/>
+<meta property="og:title" content="{{if .title}}{{.title}}{{else}}视频解析 - 短视频去水印在线工具{{end}}"/>
+<meta property="og:description" content="{{with .description}}{{.}}{{else}}在线短视频去水印解析，支持抖音、快手、微博等平台，一键解析视频、封面、音频与图集。{{end}}"/>
+<meta property="og:url" content="{{if .canonical}}{{.canonical}}{{else}}/{{end}}"/>
+<meta property="og:image" content="{{with .og_image}}{{.}}{{else}}https://cdn.jsdelivr.net/gh/5ime/img/avatar.jpg{{end}}"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="{{if .title}}{{.title}}{{else}}视频解析 - 短视频去水印在线工具{{end}}"/>
+<meta name="twitter:description" content="{{with .description}}{{.}}{{else}}在线短视频去水印解析，支持抖音、快手、微博等平台，一键解析视频、封面、音频与图集。{{end}}"/>
+<meta name="twitter:image" content="{{with .og_image}}{{.}}{{else}}https://cdn.jsdelivr.net/gh/5ime/img/avatar.jpg{{end}}"/>
+
+<!-- 结构化数据 -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "{{with .site_name}}{{.}}{{else}}视频解析{{end}}",
+  "url": "{{if .canonical}}{{.canonical}}{{else}}/{{end}}"
+}
+</script>
+
+<!-- 连接优化 -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://lf6-cdn-tos.bytecdntp.com">
+<link rel="dns-prefetch" href="https://lf6-cdn-tos.bytecdntp.com">
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdui@1.0.0/dist/css/mdui.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/mdui@1.0.0/dist/js/mdui.min.js"></script>
 <script src="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/2.1.4/jquery.min.js"></script>

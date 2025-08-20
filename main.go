@@ -46,8 +46,23 @@ func main() {
 	tmpl := template.Must(template.ParseFS(sub, "*.tmpl"))
 	r.SetHTMLTemplate(tmpl)
 	r.GET("/", func(c *gin.Context) {
+		// 生成 canonical 等 SEO 字段
+		scheme := "http"
+		if c.Request.TLS != nil {
+			scheme = "https"
+		}
+		if xfp := c.GetHeader("X-Forwarded-Proto"); xfp != "" {
+			scheme = xfp
+		}
+		canonical := fmt.Sprintf("%s://%s/", scheme, c.Request.Host)
+
 		c.HTML(200, "index.tmpl", gin.H{
-			"title": "github.com/sqleo/parse-video Demo",
+			"title":       "在线短视频去水印解析 - 支持抖音、快手、微博等",
+			"description": "免费在线短视频去水印解析工具，支持抖音、快手、微博、B站等平台，一键解析并下载无水印视频、封面、音频与图集。",
+			"keywords":    "视频解析,去水印,抖音解析,快手解析,无水印下载,短视频下载",
+			"site_name":   "视频解析",
+			"canonical":   canonical,
+			"og_image":    "https://cdn.jsdelivr.net/gh/5ime/img/avatar.jpg",
 		})
 	})
 
