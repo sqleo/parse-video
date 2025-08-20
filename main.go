@@ -16,9 +16,7 @@ import (
 	"strings"
 	"time"
 	"errors"
-
 	"github.com/gin-gonic/gin"
-
 	"github.com/sqleo/parse-video/parser"
 )
 
