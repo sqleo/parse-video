@@ -1,45 +1,50 @@
-name: dev Build Docker Image
+name: Build and Push Docker Image
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch: {}
 
 jobs:
   build:
-    name: Build Docker Image
+    name: Build and Push
     runs-on: ubuntu-latest
     steps:
 
-      - name: Checkout Github Code
-        uses: actions/checkout@v3
-
-      - name: Set Up Golang Environment
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.22.7
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build and push
-        uses: docker/build-push-action@v3
+      - name: Build and Push (amd64)
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile
           push: true
+          platforms: linux/amd64
           tags: |
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/parse-video:latest
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/parse-video:${{ github.sha }}
-          platforms: |
-            linux/amd64
-            linux/arm/v7
-            linux/arm64/v8
+
+      # 若需要多架构，确认单平台通过后取消以下注释：
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v3
+      # - name: Build and Push (multi-arch)
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     file: Dockerfile
+      #     push: true
+      #     platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+      #     tags: |
+      #       docker.io/${{ secrets.DOCKERHUB_USERNAME }}/parse-video:latest
+      #       docker.io/${{ secrets.DOCKERHUB_USERNAME }}/parse-video:${{ github.sha }}
