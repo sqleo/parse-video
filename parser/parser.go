@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/wujunwei928/parse-video/utils"
+	"github.com/sqleo/parse-video/utils"
 )
 
 // ParseVideoShareUrlByRegexp 将分享链接信息, 进行正则表达式匹配到分享链接后, 再解析视频信息

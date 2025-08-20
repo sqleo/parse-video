@@ -1,4 +1,4 @@
-module github.com/wujunwei928/parse-video
+module github.com/sqleo/parse-video
 
 go 1.22.7
 
