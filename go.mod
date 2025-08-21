@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-resty/resty/v2 v2.15.2
 	github.com/tidwall/gjson v1.17.3
+    modernc.org/sqlite v1.31.1
 )
 
 require (

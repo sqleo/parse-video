@@ -13,11 +13,13 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/sqleo/parse-video/parser"
+	"github.com/sqleo/parse-video/storage"
 )
 
 type HttpResponse struct {
@@ -31,6 +33,15 @@ var files embed.FS
 
 func main() {
 	r := gin.Default()
+
+	// 初始化 SQLite 存储
+	dbPath := os.Getenv("PARSE_VIDEO_SQLITE_PATH")
+	if dbPath == "" {
+		dbPath = "data/parse.db"
+	}
+	if err := storage.Init(dbPath); err != nil {
+		log.Fatalf("init sqlite storage failed: %v", err)
+	}
 
 	// 根据相关环境变量，确定是否需要使用basic auth中间件验证用户
 	if os.Getenv("PARSE_VIDEO_USERNAME") != "" && os.Getenv("PARSE_VIDEO_PASSWORD") != "" {
@@ -182,6 +193,15 @@ func main() {
 			}
 		}
 
+		_ = storage.Append(c.Request.Context(), storage.Record{
+			Endpoint: "/video/share/url/parse",
+			Input:    storage.Input{ShareURL: paramUrl},
+			ClientIP: c.ClientIP(),
+			UserAgent: c.GetHeader("User-Agent"),
+			Result:   parseRes,
+			Error:    func() string { if err != nil { return err.Error() }; return "" }(),
+		})
+
 		c.JSON(http.StatusOK, jsonRes)
 	})
 
@@ -202,7 +222,69 @@ func main() {
 			}
 		}
 
+		_ = storage.Append(c.Request.Context(), storage.Record{
+			Endpoint: "/video/id/parse",
+			Source:   source,
+			Input:    storage.Input{VideoID: videoId},
+			ClientIP: c.ClientIP(),
+			UserAgent: c.GetHeader("User-Agent"),
+			Result:   parseRes,
+			Error:    func() string { if err != nil { return err.Error() }; return "" }(),
+		})
+
 		c.JSON(200, jsonRes)
+	})
+
+	// 查询解析日志
+	r.GET("/logs", func(c *gin.Context) {
+		parseTime := func(s string) *time.Time {
+			if s == "" {
+				return nil
+			}
+			allDigits := true
+			for i := range s {
+				if s[i] < '0' || s[i] > '9' {
+					allDigits = false
+					break
+				}
+			}
+			if allDigits {
+				if sec, err := time.ParseDuration(s + "s"); err == nil {
+					t := time.Unix(int64(sec.Seconds()), 0)
+					return &t
+				}
+			}
+			if t, err := time.Parse(time.RFC3339, s); err == nil {
+				return &t
+			}
+			return nil
+		}
+
+		opts := storage.QueryOptions{
+			Start:    parseTime(c.Query("start")),
+			End:      parseTime(c.Query("end")),
+			Source:   c.Query("source"),
+			Endpoint: c.Query("endpoint"),
+			Contains: c.Query("contains"),
+			ClientIP: c.Query("client_ip"),
+		}
+		if v := c.Query("limit"); v != "" {
+			if n, err := strconv.Atoi(v); err == nil {
+				opts.Limit = n
+			}
+		}
+		if v := c.Query("offset"); v != "" {
+			if n, err := strconv.Atoi(v); err == nil {
+				opts.Offset = n
+			}
+		}
+
+		list, err := storage.Query(c.Request.Context(), opts)
+		if err != nil {
+			c.JSON(http.StatusOK, HttpResponse{Code: 201, Msg: err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, HttpResponse{Code: 200, Msg: "ok", Data: list})
 	})
 
 	srv := &http.Server{
