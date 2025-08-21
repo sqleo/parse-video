@@ -85,6 +85,7 @@ func main() {
 			return
 		}
 		filename := c.Query("filename")
+		disposition := c.Query("disposition") // "attachment"(默认) 或 "inline"
 
 		u, err := url.Parse(raw)
 		if err != nil {
@@ -105,7 +106,12 @@ func main() {
 		req.Header.Set("Accept", "*/*")
 		req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
 		req.Header.Set("Connection", "keep-alive")
-		req.Header.Set("Range", "bytes=0-")
+		// 将客户端 Range 透传给上游，便于 <video> 播放与拖动
+		if cr := c.GetHeader("Range"); cr != "" {
+			req.Header.Set("Range", cr)
+		} else {
+			req.Header.Set("Range", "bytes=0-")
+		}
 		req.Header.Set("Origin", "https://www.douyin.com")
 		req.Header.Set("Referer", "https://www.douyin.com/")
 		req.Header.Set("Sec-Fetch-Dest", "video")
@@ -148,6 +154,16 @@ func main() {
 			c.Header("Content-Type", ct)
 		}
 
+		// 透传与播放相关的响应头
+		if ar := resp.Header.Get("Accept-Ranges"); ar != "" {
+			c.Header("Accept-Ranges", ar)
+		} else {
+			c.Header("Accept-Ranges", "bytes")
+		}
+		if cr := resp.Header.Get("Content-Range"); cr != "" {
+			c.Header("Content-Range", cr)
+		}
+
 		// 若无扩展名，依据 Content-Type 追加合理扩展名，便于本地播放器识别
 		if !strings.Contains(filename, ".") {
 			var ext string
@@ -170,7 +186,12 @@ func main() {
 			}
 		}
 
-		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", url.QueryEscape(filename)))
+		// 根据 disposition 设置下载或在线预览
+		if strings.ToLower(disposition) == "inline" {
+			c.Header("Content-Disposition", fmt.Sprintf("inline; filename=\"%s\"", url.QueryEscape(filename)))
+		} else {
+			c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", url.QueryEscape(filename)))
+		}
 		if cl := resp.Header.Get("Content-Length"); cl != "" {
 			c.Header("Content-Length", cl)
 		}
